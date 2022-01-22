@@ -1,0 +1,267 @@
+<!--suppress ALL -->
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Relationship Map</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">
+
+	</script>
+	<link type="text/css" href="style.css" rel="stylesheet">
+	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+	<link rel="manifest" href="/site.webmanifest">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+
+<body>
+	<details id='key'>
+        <summary>Graph Settings (show/hide)</summary>
+		<p>Click on a node to add a connection to another node, change its color, or delete it.</p>
+		<p>Right-click and drag a node to move it around without affecting connections.</p>
+		<p>Click on a connection to change its type or remove it</p>
+		<p>Click in an empty area to place a new node. Then choose a name for it. <br>Once you have created the node, click on it to connect it to other nodes or change its color.</p>
+
+
+    <p>People are represented by colored circles.</p>
+    <span class='e'>Red</span> lines are <span class='e'>enemies</span><br>
+    <span class='f'>Green</span> lines are <span class='f'>friends</span><br>
+    <span class='g'>Pink</span> lines mean that one person <span class='g'>likes</span> another.<br>
+    <span class='h'>Blue</span> lines are <span class='h'>acquaintances</span><br>
+    <button onclick="p()">Prune Graph (remove orphan nodes)</button>
+    <p id='o'></p>
+    <button onclick="graph.save()">Save Graph</button><br>
+    <button id="download">Download Graph Image</button>
+    <button onclick='arrange()'>Arrange Graph (lay out nodes in a circle)</button>
+    <button onclick='showText()'>Show / hide node labels (impacts performance)</button>
+    Physics: <label class="switch">
+        <input type="checkbox" onclick="physics = ! physics">
+        <span class="slider round"></span>
+    </label>
+    <script>
+        function showText() {
+            drawText = ! drawText
+            update()
+        }
+    </script>
+    <!-- Uncomment for development only -->
+    <!-- <p>Choose a JSON file to use for relation data (development only):</p> <input type="file" id="input"> -->
+
+    </details>
+	<div><canvas id='graph'></canvas></div>
+	<script src="lib.js"></script>
+	<script src="node_network.js"></script>
+    <!-- <script src='generateHeavyGraph.js'</script> -->
+	<script src='relationMap-verbose.js'></script>
+    <script src="arrangeCircle.js"></script>
+    <script src='events.js'></script>
+	<script>
+		function p() {
+        graph.prune()
+        update()
+    }
+    
+    download.addEventListener('click', function(e) {
+    console.log(canvas.toDataURL());
+    const link = document.createElement('a');
+    link.download = 'download.jpg';
+    link.href = canvas.toDataURL();
+    link.click();
+    link.remove(); // used to be link.delete;
+});
+	</script>
+
+	
+
+<script>
+  /*
+    document.getElementById('input')
+             .addEventListener('change', function() {
+              
+             let fr = new FileReader();
+             fr.onload = function() {
+                 let jsonData = JSON.parse(fr.result);
+                 graph.createFromJSON(jsonData)
+                 update()
+             }
+              
+             fr.readAsText(this.files[0]);
+             });
+  */
+
+</script>
+
+<div id="nameNode" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <p>Enter new person's name: </p>
+        <input id='name' placeholder="New name">
+        <button id="done">OK</button>
+    </div>
+    <!-- Modal JavaScript -->
+    <script>
+
+        let nameIn = document.getElementById('name');
+        let done = document.getElementById('done');
+        let nodeName;
+        // Get the modal
+        let nameModal = document.getElementById("nameNode");
+
+        // Get the button that opens the modal
+
+        // Get the <span> element that closes the modal
+        let span = document.getElementsByClassName("close")[0];
+
+        // When the user clicks the button, open the modal
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function () {
+            nameModal.style.display = "none";
+
+        }
+
+        // When the user clicks anywhere outside the modal, close it
+        window.onclick = function (event) {
+            if (event.target === nameModal) {
+                nameModal.style.display = "none";
+
+            }
+        }
+
+        nameIn.onchange = function () {
+            nodeName = nameIn.value
+        }
+
+
+    </script>
+</div>
+<div id="edgeModal" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+        <div id='edgeinfo'>
+            <h5 id='ei'></h5>
+        </div>
+        <span class="close">&times;</span>
+        <p>Select relationship type: </p>
+        <select id="edgeType">
+            <option>Friend</option>
+            <option>Likes</option>
+            <option>Enemy</option>
+            <option>Acquaintance</option>
+        </select>
+        <button id='delEdge'>Delete this edge</button>
+        <button id="ok">OK</button>
+    </div>
+    <!-- Modal JavaScript -->
+    <script>
+        let edgeTypeIn = document.getElementById('edgeType')
+        let edgeModal = document.getElementById('edgeModal')
+        let edone = document.getElementById('ok');
+        let deleteB = document.getElementById('delEdge')
+        let eType;
+
+        // Get the button that opens the modal
+
+        // Get the <span> element that closes the modal
+        let espan = document.getElementsByClassName("close")[1];
+
+
+        // When the user clicks on <span> (x), close the modal
+        espan.onclick = function () {
+            edgeModal.style.display = "none";
+
+        }
+
+        // When the user clicks anywhere outside the modal, close it
+        window.onclick = function (event) {
+            if (event.target === edgeModal) {
+                edgeModal.style.display = "none";
+
+            }
+        }
+
+        edgeTypeIn.onchange = function () {
+            eType = edgeTypeIn.value
+        }
+
+        edone.onclick = function () {
+            edgeModal.style.display = 'none';
+        }
+
+
+    </script>
+</div>
+
+<div id="editNodeModal" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+        <div id='nodeinfo'>
+            <h5 id='nn'></h5>
+            <h5 id='oc'></h5>
+            <h5 id='ic'></h5>
+        </div>
+        <span class="close">&times;</span>
+        <p>Add a connection</p>
+        <select id="connectTo">
+            <option></option>
+        </select>
+
+        <select id="newConType">
+            <option>Friend</option>
+            <option>Likes</option>
+            <option>Enemy</option>
+            <option>Acquaintance</option>
+        </select>
+        <p>Node Color</p>
+        <input type='color' id="pickNodeColor">
+        <button id="colorok">Set Node Color</button>
+        <br>
+        <button id='delNode'>Delete this node</button>
+        <button id="nodeok">OK</button>
+    </div>
+    <!-- Modal JavaScript -->
+    <script>
+        let connectNode = document.getElementById('connectTo')
+        let nodeModal = document.getElementById('editNodeModal')
+        let ndone = document.getElementById('nodeok');
+        let cdone = document.getElementById('colorok');
+        let deleteNode = document.getElementById('delNode')
+        let conTypeSelect = document.getElementById('newConType');
+        let nodeTo;
+        let conType;
+        let nodeColorPicker = document.getElementById('pickNodeColor')
+
+
+        // Get the <span> element that closes the modal
+        let nspan = document.getElementsByClassName("close")[2];
+
+
+        // When the user clicks on <span> (x), close the modal
+        nspan.onclick = function () {
+            nodeModal.style.display = "none";
+
+        }
+
+        // When the user clicks anywhere outside the modal, close it
+        window.onclick = function (event) {
+            if (event.target === nodeModal) {
+                nodeModal.style.display = "none";
+
+            }
+        }
+
+
+    </script>
+</div>
+
+
+</body>
+
+</html>
