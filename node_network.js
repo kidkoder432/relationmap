@@ -61,18 +61,10 @@ class Network {
         this.edges.push([fromNode, toNode, color ? color : getColor()]);
     }
 
-    prune(nodeLabel = 33333) {
-
-        for (let edge of this.edges.slice()) {
-            if (edge.includes(nodeLabel)) {
-                this.edges = remove(this.edges, edge);
-            }
-
-            for (let node of Object.keys(this.nodes).slice()) {
-                if (!this.edges.flat().includes(node)) {
-                    delete this.nodes[node];
-                }
-
+    prune() {
+        for (let node of Object.keys(this.nodes).slice()) {
+            if (!this.edges.flat().includes(node)) {
+                delete this.nodes[node];
             }
         }
     }
