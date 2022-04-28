@@ -78,6 +78,7 @@ canvas.onclick = function (e) {
         // document.getElementById('ic').innerHTML = graph.edges.filter(x => x[1] === clickedNode)
         deleteNode.onclick = function () {
             graph.delete_node(clickedNode)
+            console.log(clickedNode)
             nodeModal.style.display = 'none'
             update()
 
@@ -154,6 +155,7 @@ canvas.onmousemove = function (e) {
 
 
     if (mouseDown) {
+        console.log('down')
         let [moveX, moveY] = getMousePos(e)
         graph.nodes[clickedNode].x += moveX - lastX;
         graph.nodes[clickedNode].y += moveY - lastY;

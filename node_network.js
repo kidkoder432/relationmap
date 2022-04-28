@@ -16,13 +16,13 @@ class Node {
         ctx.fillStyle = this.bcolor;
         ctx.arc(this.x, this.y, 25, 0, 2 * Math.PI);
         ctx.fill()
-        console.log('circle done')
+        // console.log('circle done')
         ctx.fillStyle = '#ffffff';// textThreshold(this.bcolor)
         ctx.textAlign = 'center';
         if (drawText) {
             fitTextOnCanvas(this.label, 'Roboto Mono', this.x, this.y + 5);
         }
-        console.log('text done')
+        // console.log('text done')
 
     }
 
@@ -62,8 +62,10 @@ class Network {
     }
 
     prune() {
+        let flattened = this.edges.flat();
+        console.log(flattened)
         for (let node of Object.keys(this.nodes).slice()) {
-            if (!this.edges.flat().includes(node)) {
+            if (! flattened.includes(node)) {
                 delete this.nodes[node];
             }
         }
@@ -71,13 +73,17 @@ class Network {
 
     delete_node(nodeLabel) {
         delete this.nodes[nodeLabel];
-        this.prune(nodeLabel)
+        this.edges = this.edges.filter(x => ! x.includes(nodeLabel))
+        this.prune()
 
 
     }
 
-    show(nodes = this.nodes, edges = this.edges) {
+    show(nodes, edges) {
+        nodes = nodes !== undefined ? nodes : this.nodes;
+        edges = edges !== undefined ? edges : this.edges;
         for (let edge of edges) {
+            console.log(edge)
             let fromX = this.nodes[edge[0]].x;
             let fromY = this.nodes[edge[0]].y + 10;
             let toX = this.nodes[edge[1]].x;
@@ -214,7 +220,7 @@ class Network {
         let relevantEdges = this.edges.filter(x => x.includes(selected))
         let connectedNodes = []
         for (let x of relevantEdges) {
-            connectedNodes.push(x.slice(0, 2).filter(f => f !== selectd))
+            connectedNodes.push(x.slice(0, 2).filter(f => f !== selected))
         }
         return connectedNodes;
 
