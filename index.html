@@ -2,28 +2,29 @@
 <html lang="en">
 
 <head>
-	<meta charset="UTF-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Relationship Map</title>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relationship Map</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">
 
-	</script>
-	<link type="text/css" href="style.css" rel="stylesheet">
-	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-	<link rel="manifest" href="/site.webmanifest">
+    </script>
+    <link type="text/css" href="style.css" rel="stylesheet">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 
 <body>
-	<details id='key'>
-        <summary>Graph Settings (show/hide)</summary>
-		<p>Click on a node to add a connection to another node, change its color, or delete it.</p>
-		<p>Right-click and drag a node to move it around without affecting connections.</p>
-		<p>Click on a connection to change its type or remove it</p>
-		<p>Click in an empty area to place a new node. Then choose a name for it. <br>Once you have created the node, click on it to connect it to other nodes or change its color.</p>
+<details id='key'>
+    <summary>Graph Settings (show/hide)</summary>
+    <p>Click on a node to add a connection to another node, change its color, or delete it.</p>
+    <p>Right-click and drag a node to move it around without affecting connections.</p>
+    <p>Click on a connection to change its type or remove it</p>
+    <p>Click in an empty area to place a new node. Then choose a name for it. <br>Once you have created the node, click
+        on it to connect it to other nodes or change its color.</p>
 
 
     <p>People are represented by colored circles.</p>
@@ -33,68 +34,98 @@
     <span class='h'>Blue</span> lines are <span class='h'>acquaintances</span><br>
     <button onclick="p()">Prune Graph (remove orphan nodes)</button>
     <p id='o'></p>
-    <button onclick="graph.save()">Save Graph</button><br>
+    <button onclick='download()'>Save Graph</button>
+    <br>
     <button id="download">Download Graph Image</button>
     <button onclick='arrange()'>Arrange Graph (lay out nodes in a circle)</button>
     <button onclick='showText()'>Show / hide node labels (impacts performance)</button>
-    Physics: <label class="switch">
-        <input type="checkbox" onclick="physics = ! physics">
-        <span class="slider round"></span>
-    </label>
     <script>
         function showText() {
-            drawText = ! drawText
+            drawText = !drawText
             update()
         }
     </script>
     <!-- Uncomment for development only -->
-    <!-- <p>Choose a JSON file to use for relation data (development only):</p> <input type="file" id="input"> -->
+    <p>Choose a JSON file to use for relation data (development only):</p> <input type="file" id="input">
+    <script>
+        function upload(evt) {
+            let files = evt.target.files; // FileList object
 
-    </details>
-	<div><canvas id='graph'></canvas></div>
-	<script src="lib.js"></script>
-	<script src="node_network.js"></script>
-    <!-- <script src='generateHeavyGraph.js'</script> -->
-    <script src="arrangeCircle.js"></script>
-    <script src='relationMap-verbose.js'></script>
-    <script src='events.js'></script>
+            // use the 1st file from the list
+            let f = files[0];
+
+            let reader = new FileReader();
+
+            reader.onload = (function(theFile) {
+                return function(e) {
+
+                    graph.createFromJSON(JSON.parse(e.target.result));
+                };
+            })(f);
+
+            // Read in the image file as a data URL.
+            reader.readAsText(f);
+        }
+
+        document.getElementById('input').addEventListener('change', upload, false);
+    </script>
+</details>
+<div>
+    <canvas id='graph'></canvas>
+</div>
+<script src="lib.js"></script>
+<script src="node_network.js"></script>
+<!-- <script src='generateHeavyGraph.js'</script> -->
+<script src="arrangeCircle.js"></script>
+<script src='relationMap-verbose.js'></script>
+<script src='events.js'></script>
 
 
-	<script>
-		function p() {
+<script>
+    function p() {
         graph.prune()
         update()
     }
-    
-    download.addEventListener('click', function(e) {
-    console.log(canvas.toDataURL());
-    const link = document.createElement('a');
-    link.download = 'download.jpg';
-    link.href = canvas.toDataURL();
-    link.click();
-    link.remove(); // used to be link.delete;
-});
-	</script>
 
-	
+    function download() {
+        let fname = 'conn.json'
+        let connections = {};
+        for (let node of Object.keys(graph.nodes)) {
+            connections[node] = {'friends': [], 'likes': [], 'enemies': []}
+        }
 
-<script>
-  /*
-    document.getElementById('input')
-             .addEventListener('change', function() {
-              
-             let fr = new FileReader();
-             fr.onload = function() {
-                 let jsonData = JSON.parse(fr.result);
-                 graph.createFromJSON(jsonData)
-                 update()
-             }
-              
-             fr.readAsText(this.files[0]);
-             });
-  */
+        for (let edge of graph.edges) {
+            if (edge[2] === COLORS['likes']) {
+                connections[edge[0]]['likes'].push(edge[1])
+            } else if (edge[2] === COLORS['friends']) {
+                connections[edge[0]]['friends'].push(edge[1])
+            } else if (edge[2] === COLORS['enemies']) {
+                connections[edge[0]]['enemies'].push(edge[1])
+            }
+        }
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' +
+            encodeURIComponent(JSON.stringify(connections)));
+        element.setAttribute('download', fname);
 
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        element.click();
+
+        document.body.removeChild(element);
+    }
+
+    download.addEventListener('click', function (e) {
+        console.log(canvas.toDataURL());
+        const link = document.createElement('a');
+        link.download = 'download.jpg';
+        link.href = canvas.toDataURL();
+        link.click();
+        link.remove(); // used to be link.delete;
+    });
 </script>
+
 
 <div id="nameNode" class="modal">
 

@@ -44,20 +44,19 @@ async function getF() {
     $.ajax({
         url: 'relationships.jsonc',
         success: function (data) {
-            console.log('Data:', data)
+            console.log('Data:', data);
             let connections = JSON.parse(data);
-            graph.createFromJSON(connections)
-            arrange()
-            update()
+            graph.createFromJSON(connections);
+            arrange();
+            update();
 
         }
     });
 }
+
+
 // Comment for local tests (file access violates CORS policy)
 getF();
 
 // Uncomment for local tests
-// let connections = {"Shannon Zhou": {"friends": ["Sebastian Tsai", "Branden Wang", "Cindy Lu", "Kaitlyn Tran", "Thomas Ton", "Anh Nguyen"],       
-// graph.createFromJSON(connections)
-// arrange()
-// update()
+// generateGraph()

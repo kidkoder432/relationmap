@@ -122,28 +122,7 @@ class Network {
 
     }
 
-    async save(fileName) {
-        let connections = {};
-        for (let edge of this.edges) {
-            connections[edge[0]] = { 'friends': [], 'likes': [], 'enemies': [] }
-        }
 
-        for (let edge of this.edges) {
-            if (edge[2] === COLORS['likes']) {
-                connections[edge[0]]['likes'].push(edge[1])
-            } else if (edge[2] === COLORS['friends']) {
-                connections[edge[0]]['friends'].push(edge[1])
-            } else if (edge[2] === COLORS['enemies']) {
-                connections[edge[0]]['enemies'].push(edge[1])
-            }
-        }
-        let stateFile = new FormData()
-        stateFile.append('data', JSON.stringify(this.nodes))
-        await fetch('/upload.php', {
-            method: 'POST'
-        })
-
-    }
 
     mouseNode(e, x = 0, y = 0) {
         if (e) {
@@ -228,6 +207,3 @@ class Network {
 
 }
 
-function drawCircle() {
-    let [mx, my] = getMousePos(e)
-}

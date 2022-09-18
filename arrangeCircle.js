@@ -3,16 +3,16 @@ function ptc(d, t) {
 }
 
 function ctp(x, y) {
-    return [Math.sqrt(x ^ 2, y ^ 2), Math.atan2(y, x)]
+    return [Math.sqrt(x ^ 2 + y ^ 2), Math.atan2(y, x)]
 }
 
 function arrange() {
     
-    let minLength = 120;
+    let minLength = 200 ;
     let numNodes = Object.keys(graph.nodes).length;
     let step = 2 * Math.PI / numNodes;
 
-    let d = 1400;  // minLength / step;
+    let d = minLength / step;
 
     let angle = 0;
     for (let n of Object.values(graph.nodes)) {
